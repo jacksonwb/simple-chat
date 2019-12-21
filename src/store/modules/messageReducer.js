@@ -26,12 +26,15 @@ export function setMessages(messages) {
 	}
 }
 
-export function fetchMessages(dispatch) {
-	fetch('/api/messages')
-	.then(res => res.json())
-	.then(data => {
-		dispatch(setMessages(data))
-	})
+// Thunks
+export function fetchMessages() {
+	return (dispatch) => {
+		fetch('/api/messages')
+		.then(res => res.json())
+		.then(data => {
+			dispatch(setMessages(data))
+		})
+	}
 }
 
 // Reducer

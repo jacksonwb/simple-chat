@@ -23,7 +23,6 @@ CREATE TABLE users (
 	user VARCHAR
 )`)
 
-setTimeout(() => {addUser(db, 'jackson')}, 100)
 setTimeout(() => {addMessage(db, 'jackson', 'Hey There!')}, 100)
 
 // Models
@@ -50,6 +49,13 @@ function addUser(db, user) {
 	db.run(`
 		INSERT INTO users(user)
 		VALUES(?)
+	`, user)
+}
+
+function removeUser(db, user) {
+	db.run(`
+		DELETE FROM users
+		WHERE user = (?)
 	`, user)
 }
 
@@ -91,23 +97,40 @@ app.post('/api/messages', (req, res) => {
 
 app.get('/api/users', (req, res) => {
 	getAllUsers(db, rows => {
-		res.json(rows)
+		console.log(rows)
+		res.json(rows.map((row) => row.user))
 	})
 })
 
 // Sockets
 io.on('connection', (socket) => {
 	let address = socket.handshake.address
+	let user = {user:null}
 	console.log(`Connection from ${address}`)
+
+	socket.on('join', (data) => {
+		console.log('join - ', data)
+		if (data && data.author) {
+			addUser(db, data.author)
+			user.user = data.author
+			socket.broadcast.emit('join', {author: data.author})
+		} else {
+			socket.disconnect(true)
+			return;
+		}
+	})
+
 	socket.on('chatMsg', (data) => {
 		if (data && data.author && data.msg) {
 			addMessage(db, data.author, data.msg)
 			socket.broadcast.emit('chatMsg', {...data, sentDate: Date.now()})
-			console.log(data)
 		}
 	})
+
 	socket.on('disconnect', () => {
+		removeUser(db, user.user)
 		console.log('disconnect')
+		socket.broadcast.emit('leave', {author: user.user})
 	})
 })
 

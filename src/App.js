@@ -1,14 +1,14 @@
 import React, {useState, useEffect} from 'react';
 import styled from 'styled-components'
-import {Switch, Route, Link, Redirect, useParams, useLocation, useHistory} from 'react-router-dom'
+import {Switch, Route, Redirect} from 'react-router-dom'
 import './app-style.css'
 import GetStarted from './components/GetStarted'
 import {useSelector, useDispatch} from 'react-redux'
 import logo from './logo.png'
 import Cookies from 'js-cookie'
-import {setCurrentUser, updateCurrentUser, fethchActiveUsers} from './store/modules/userReducer'
+import {updateCurrentUser, fethchActiveUsers} from './store/modules/userReducer'
 import {fetchMessages, addMessage} from './store/modules/messageReducer'
-import io from 'socket.io-client'
+import {socketEmit, socketConnect} from './store/middleware/socketManage'
 
 export default function App() {
 	let user
@@ -29,36 +29,22 @@ export default function App() {
 	);
 }
 
-function registerSocketEvents(socket, dispatch) {
-	if (socket) {
-		socket.on('chatMsg', (data) => {
-			dispatch(addMessage(data.author, data.msg, data.sentDate))})
-	}
-}
-
-function createMessageSend(dispatch, socket, author) {
+function createMessageSend(dispatch, author) {
 	return (msg) => {
+		dispatch(socketEmit('chatMsg', {author, msg}))
 		dispatch(addMessage(author, msg, Date.now()))
-		socket.emit('chatMsg', {msg, author})
 	}
 }
 
 function Chat(props) {
 	let currentUser = useSelector(state => state.user.currentUser)
 	let dispatch = useDispatch()
-	let [socket, setSocket] = useState(null)
 
 	useEffect(() => {
-		fetchMessages(dispatch)
-		fethchActiveUsers(dispatch)
-	}, [dispatch])
-
-	useEffect(() => {
-		if (!socket) {
-			setSocket(io.connect('localhost:4000', {path: '/sock'}))
-		}
-		registerSocketEvents(socket, dispatch)
-	}, [socket, dispatch])
+		dispatch(fetchMessages())
+		dispatch(fethchActiveUsers())
+		dispatch(socketConnect())
+	})
 
 	// Restore user from cookies
 	if (!currentUser) {
@@ -74,7 +60,7 @@ function Chat(props) {
 	return (
 		<>
 			<MenuBar currentUser={currentUser}/>
-			<ChatGrid sendMsg={createMessageSend(dispatch, socket, currentUser)}/>
+			<ChatGrid sendMsg={createMessageSend(dispatch, currentUser)}/>
 		</>
 	)
 }
@@ -141,7 +127,6 @@ const MessageTextArea = styled.textarea`
 
 function NewMessage(props) {
 	let [message, updateMessage] = useState('')
-	let dispatch = useDispatch()
 
 	return (
 		<MessageTextArea
@@ -156,7 +141,7 @@ function NewMessage(props) {
 					updateMessage('')
 				}
 			}}
-			/>
+		/>
 	)
 }
 
@@ -167,11 +152,11 @@ function UserAvatar(props) {
 }
 
 function ActiveUsers(props) {
+	let currentUser = useSelector(state => state.user.currentUser)
 	let users = useSelector(state => state.user.activeUsers)
-	console.log(users)
 	return (
-		users.map((user) => {
-			return <UserAvatar user={user.user} key={user.user}/>
+		users.filter(user => user !== currentUser).map((user) => {
+			return <UserAvatar user={user} key={user}/>
 		})
 	)
 
