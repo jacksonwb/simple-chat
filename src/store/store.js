@@ -8,7 +8,7 @@ import io from 'socket.io-client'
 
 let store = createStore(
 	combineReducers({user: userReducer, message: messageReducer}),
-	applyMiddleware(thunk, socketManager(io, '10.113.1.1:4000'))
+	applyMiddleware(thunk, socketManager(io, 'localhost:4000'))
 )
 
 export default store
