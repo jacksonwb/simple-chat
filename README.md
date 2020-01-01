@@ -2,8 +2,8 @@
 This is a very simple chat application using react with socket.io websockets and redux. The backend uses express and Node.js. This was build as a way to experiment with websockets and redux.
 
 <div float="left">
-	<img src='img/desktop.png' width='400'>
-	<img src='img/mobile.png' width='360'>
+	<img src='img/desktop.png' width='450'>
+	<img src='img/mobile.png' width='260'>
 <div>
 
 ### Run the Application
