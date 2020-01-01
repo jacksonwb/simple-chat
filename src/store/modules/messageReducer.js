@@ -1,5 +1,3 @@
-import { array } from "prop-types"
-
 // Constants
 const ADD_MESSAGE = 'ADD_MESSAGE'
 const SET_MESSAGES = 'SET_MESSAGES'

@@ -6,24 +6,35 @@ const app = express()
 const server = require('http').Server(app)
 const port = 4000
 const io = require('socket.io')(server, {path: '/sock'})
+const fs = require('fs')
 
 //DB migrate
-const db = new sqlite.Database(':memory:')
+const db = new sqlite.Database('db.sqlite')
 
-db.run(`
-CREATE TABLE messages (
-	id_msg INTEGER PRIMARY KEY AUTOINCREMENT,
-	author VARCHAR,
-	msg VARCHAR,
-	sentDate VARCHAR
-)`);
+fs.access('db.sqlite', (err) => {
+	if (err) {
+		console.log('No database found - configuring...')
+		console.log('Success')
+		migrate(db);
+	}
+})
 
-db.run(`
-CREATE TABLE users (
-	user VARCHAR
-)`)
+function migrate(db) {
+	db.run(`
+	CREATE TABLE messages (
+		id_msg INTEGER PRIMARY KEY AUTOINCREMENT,
+		author VARCHAR,
+		msg VARCHAR,
+		sentDate VARCHAR
+	)`);
 
-setTimeout(() => {addMessage(db, 'jackson', 'Hey There!')}, 100)
+	db.run(`
+	CREATE TABLE users (
+		user VARCHAR
+	)`)
+
+	setTimeout(() => {addMessage(db, 'jackson', 'Hey There!')}, 100)
+}
 
 // Models
 function addMessage(db, author, msg) {

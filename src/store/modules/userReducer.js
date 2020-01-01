@@ -45,7 +45,6 @@ export function fethchActiveUsers() {
 		fetch('/api/users')
 		.then(res => res.json())
 		.then(data => {
-			console.log('fetch users - ', data)
 			dispatch(setActiveUsers(data))
 		})
 		.catch((err) => {console.error(err)})

@@ -1,7 +1,7 @@
 import logo from '../logo.png';
 import React, {useState, useRef, useEffect} from 'react';
-import {Switch, Route, Link, Redirect, useParams, useLocation, useHistory} from 'react-router-dom'
-import {useDispatch, useSelector} from 'react-redux'
+import {useHistory} from 'react-router-dom'
+import {useDispatch} from 'react-redux'
 import styled from 'styled-components'
 import {updateCurrentUser} from '../store/modules/userReducer'
 import Cookie from 'js-cookie'
@@ -24,7 +24,6 @@ const Button = styled.button`
 	font-size: 1em;
 	margin-left: 10px;
 	font-family: 'Cutive Mono', monospace;
-	/* display: block; */
 `
 
 const Textarea = styled.textarea`
